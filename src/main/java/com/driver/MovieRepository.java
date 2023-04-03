@@ -67,8 +67,9 @@ public class MovieRepository {
                     movieList.add(movieName);
                 }
             }
-            return movieList;
         }
+            return movieList;
+
 
     }
     public List<String> findAllMovies(){
