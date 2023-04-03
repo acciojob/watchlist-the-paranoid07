@@ -33,29 +33,43 @@ public class MovieRepository {
     }
 
     public String addMovieDirectorPair(String movieName,String directorName){
-        movieDirectorDb.put(movieName,directorName);
-        return "Movie-director pair added successfully";
+
+        if(!movieDirectorDb.containsKey(movieName)){
+            movieDirectorDb.put(movieName,directorName);
+            return "Movie-director pair added successfully";
+        }
+        return "Movie-Pair aready exist";
     }
     public Movie getMovieByName(String movieName){
-        Movie movie = movieDb.get(movieName);
-        return movie;
+        if(movieDb.containsKey(movieName)) {
+            Movie movie = movieDb.get(movieName);
+            return movie;
+        }
+        return null;
     }
 
     public Director getDirectorByname(String directorName){
-        Director director=directorDb.get(directorName);
-        return director;
+
+        if(directorDb.containsKey(directorName)){
+            Director director=directorDb.get(directorName);
+            return director;
+        }
+        return null;
     }
 
     public List<String> getMoviesByDirectorName(String directorName){
-        List<String> movieList=new ArrayList<>();
+        List<String> movieList = new ArrayList<>();
+        if(movieDirectorDb.containsValue(directorName)) {
 
-        for(Map.Entry<String,String> entry : movieDirectorDb.entrySet()){
-            if(entry.getValue().equals(directorName)){
-                String movieName=entry.getKey();
-                movieList.add(movieName);
+            for (Map.Entry<String, String> entry : movieDirectorDb.entrySet()) {
+                if (entry.getValue().equals(directorName)) {
+                    String movieName = entry.getKey();
+                    movieList.add(movieName);
+                }
             }
+            return movieList;
         }
-        return movieList;
+
     }
     public List<String> findAllMovies(){
         List<String> allMoviesList=new ArrayList<>();
@@ -68,12 +82,17 @@ public class MovieRepository {
 
     public String deleteDirectorByName(String directorName){
 
-        directorDb.remove(directorName);
+        if(directorDb.containsKey(directorName)) {
+            directorDb.remove(directorName);
+        }
+
 
         for(Map.Entry<String,String> entry : movieDirectorDb.entrySet()){
             if(entry.getValue().equals(directorName)){
                 String movieName=entry.getKey();
-                movieDb.remove(movieName);
+                if(movieDb.containsKey(movieName)) {
+                    movieDb.remove(movieName);
+                }
                 movieDirectorDb.remove(movieName);
             }
         }
