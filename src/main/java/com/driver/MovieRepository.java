@@ -1,10 +1,7 @@
 package com.driver;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
-import java.security.DigestException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +11,7 @@ import java.util.Map;
 public class MovieRepository {
     HashMap<String,Movie> movieDb=new HashMap<>();
     HashMap<String, Director> directorDb=new HashMap<>();
-    HashMap<String,String> movieDirectorDb=new HashMap<>();
+    HashMap<String,List<String>>directorMovieDb =new HashMap<>();
 
     public String addMovie(Movie movie){
         String key=movie.getName();
@@ -34,15 +31,17 @@ public class MovieRepository {
 
     public String addMovieDirectorPair(String movieName,String directorName){
 
-        if(!(movieDb.containsKey(movieName)) || !(directorDb.containsKey(directorName))){
-            movieDirectorDb.put(movieName,directorName);
+        if(directorMovieDb.containsKey(directorName)){
+            List<String>movies=directorMovieDb.get(directorName);
+            movies.add(movieName);
             return "Movie-director pair added successfully";
         }
-        if(!movieDirectorDb.containsKey(movieName)){
-            movieDirectorDb.put(movieName,directorName);
-            return "Movie-director pair added successfully";
-        }
-        return "Movie-Pair aready exist";
+        List<String>movies=new ArrayList<>();
+        movies.add(movieName);
+        directorMovieDb.put(directorName,movies);
+        return "Movie-director pair added successfully";
+
+        //return "Movie-Pair aready exist";
     }
     public Movie getMovieByName(String movieName){
         if(movieDb.containsKey(movieName)) {
@@ -62,18 +61,12 @@ public class MovieRepository {
     }
 
     public List<String> getMoviesByDirectorName(String directorName){
-        List<String> movieList = new ArrayList<>();
-        if(movieDirectorDb.containsValue(directorName)) {
-
-            for (Map.Entry<String, String> entry : movieDirectorDb.entrySet()) {
-                if (entry.getValue().equals(directorName)) {
-                    String movieName = entry.getKey();
-                    movieList.add(movieName);
-                }
-            }
-        }
+        if(directorMovieDb.containsKey(directorName)) {
+            List<String> movieList = directorMovieDb.get(directorName);
             return movieList;
+        }
 
+        return new ArrayList<>();
 
     }
     public List<String> findAllMovies(){
@@ -86,21 +79,20 @@ public class MovieRepository {
     }
 
     public String deleteDirectorByName(String directorName){
-
-        if(directorDb.containsKey(directorName)) {
+        if(directorDb.containsKey(directorName)){
             directorDb.remove(directorName);
         }
-
-
-        for(Map.Entry<String,String> entry : movieDirectorDb.entrySet()){
-            if(entry.getValue().equals(directorName)){
-                String movieName=entry.getKey();
-                if(movieDb.containsKey(movieName)) {
-                    movieDb.remove(movieName);
+        if(directorMovieDb.containsKey(directorName)){
+            List<String>movieList=directorMovieDb.get(directorName);
+            for(String movie:movieList){
+                if(movieDb.containsKey(movie)){
+                    movieDb.remove(movie);
                 }
-                movieDirectorDb.remove(movieName);
             }
+            directorMovieDb.remove(directorName);
         }
+
+
 
         return "Movies by director "+directorName+" removed successfully";
 
@@ -108,19 +100,21 @@ public class MovieRepository {
 
     public String deleteAllDirectors(){
 
-        for(String directorName:directorDb.keySet()){
-            directorDb.remove(directorName);
+       for(String directorName:directorDb.keySet()){
+           directorDb.remove(directorName);
+           if(directorMovieDb.containsKey(directorName)){
+               List<String>movieList=directorMovieDb.get(directorName);
+               for(String movie:movieList){
+                   if(movieDb.containsKey(movie)){
+                       movieDb.remove(movie);
+                   }
+               }
+               directorMovieDb.remove(directorName);
+           }
 
-            for(Map.Entry<String,String> entry : movieDirectorDb.entrySet()){
-                if(entry.getValue().equals(directorName)){
-                    String movieName=entry.getKey();
-                    if(movieDb.containsKey(movieName)) {
-                        movieDb.remove(movieName);
-                    }
-                    movieDirectorDb.remove(movieName);
-                }
-            }
-        }
+
+       }
+        directorMovieDb.clear();
         return "All directors and their movies have been removed";
     }
 
