@@ -34,6 +34,10 @@ public class MovieRepository {
 
     public String addMovieDirectorPair(String movieName,String directorName){
 
+        if(!(movieDb.containsKey(movieName)) || !(directorDb.containsKey(directorName))){
+            movieDirectorDb.put(movieName,directorName);
+            return "Movie-director pair added successfully";
+        }
         if(!movieDirectorDb.containsKey(movieName)){
             movieDirectorDb.put(movieName,directorName);
             return "Movie-director pair added successfully";
@@ -110,7 +114,9 @@ public class MovieRepository {
             for(Map.Entry<String,String> entry : movieDirectorDb.entrySet()){
                 if(entry.getValue().equals(directorName)){
                     String movieName=entry.getKey();
-                    movieDb.remove(movieName);
+                    if(movieDb.containsKey(movieName)) {
+                        movieDb.remove(movieName);
+                    }
                     movieDirectorDb.remove(movieName);
                 }
             }
